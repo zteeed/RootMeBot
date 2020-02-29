@@ -10,11 +10,12 @@ user_type = Dict[str, str]
 servers_type = List[Dict[str, Union[int, str]]]
 server_type = Dict[str, Union[int, str]]
 response_content_type = Optional[Dict[str, Any]]
+rootme_challenge_list = Optional[List[Dict[str, str]]]
 
 
 class DatabaseManager:
 
-    def __init__(self, filename: str, rootme_challenges: Dict[str, response_content_type]):
+    def __init__(self, filename: str, rootme_challenges: rootme_challenge_list):
         self.filename = filename
         self.rootme_challenges = rootme_challenges
 

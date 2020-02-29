@@ -123,12 +123,14 @@ class RootMeBot:
 
 
 def init_rootme_challenges():
-    rootme_challenges = {}
+    rootme_challenges = []
     for lang in LANGS:
         loop = asyncio.get_event_loop()  # event loop
         future = asyncio.ensure_future(get_challenges(lang))  # tasks to do
         challenges = loop.run_until_complete(future)  # loop until done
-        rootme_challenges[lang] = challenges
+        challenges = challenges[0]
+        rootme_challenges += list(challenges.values())
+    rootme_challenges = sorted(rootme_challenges, key=lambda x: int(x['id_challenge']))
     return rootme_challenges
 
 
