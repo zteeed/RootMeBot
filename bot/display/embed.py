@@ -1,4 +1,5 @@
 from html import unescape
+from os import environ
 from typing import Dict, List, Optional
 
 import discord
@@ -9,9 +10,11 @@ from discord.guild import Guild
 
 import bot.display.show as show
 from bot.colors import green, red, yellow
-from bot.constants import bot_channel, PROJECT_INFORMATION
+from bot.constants import PROJECT_INFORMATION
 from bot.database.manager import DatabaseManager
 from bot.manage.discord_data import get_command_args
+
+BOT_CHANNEL = environ.get('BOT_CHANNEL')
 
 
 def display(part: str) -> None:
@@ -22,7 +25,7 @@ def display(part: str) -> None:
 
 async def interrupt(channel: TextChannel, message: str, embed_color: Optional[int] = None,
                     embed_name: Optional[str] = None) -> None:
-    if str(channel) != bot_channel or not message:
+    if str(channel) != BOT_CHANNEL or not message:
         return
     parts = show.display_parts(message)
     for part in parts:
