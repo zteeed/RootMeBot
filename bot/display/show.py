@@ -87,8 +87,8 @@ async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot
     else:
         #  number_challenge_solved = await get_number_challenge_solved(name, lang)
         await db.create_user(
-            id_discord_server, user['id_user'], user['username'], user['number_challenge_solved']
-        )
+            id_discord_server, user['id_user'], user['username'], user['score'], user['number_challenge_solved']
+    )
         return add_emoji(bot, f'User {name} successfully added in team', emoji2)
 
 
@@ -104,38 +104,13 @@ async def display_remove_user(db: DatabaseManager, id_discord_server: int, bot: 
 async def display_scoreboard(db: DatabaseManager, id_discord_server: int) -> str:
     tosend = ''
     users = await db.select_users(id_discord_server)
-    usernames = [user['rootme_username'] for user in users]
-    lang = await db.get_server_language(id_discord_server)
-    scores = await get_scores(usernames, lang)
-    for rank, d in enumerate(scores):
-        user, score = d['name'], d['score']
+    users = sorted(users, key=lambda x: x['score'], reverse=True)
+    for rank, user in enumerate(users):
+        username, score = user['rootme_username'], user['score']
         if rank < len(medals):
-            tosend += f'{medals[rank]} {user} --> Score = {score} \n'
+            tosend += f'{medals[rank]} {username} --> Score = {score} \n'
         else:
-            tosend += f' • • • {user} --> Score = {score} \n'
-
-    return tosend
-
-
-async def display_categories(lang: str) -> str:
-    tosend = ''
-    categories = await get_challenges(lang)
-    for category in categories:
-        tosend += f' • {category["name"]} ({category["challenges_nb"]} challenges) \n'
-    return tosend
-
-
-async def display_category(lang: str, category: str) -> str:
-    category_data = await get_category(category, lang)
-
-    if category_data is None:
-        tosend = f'Category {category} does not exists.'
-        return tosend
-
-    tosend = ''
-    for chall in category_data[0]['challenges']:
-        tosend += f' • {unescape(chall["name"])} ({chall["value"]} points / {chall["validations_percentage"]} of \
-success / difficulty: {unescape(chall["difficulty"])}) \n'
+            tosend += f' • • • {username} --> Score = {score} \n'
     return tosend
 
 

@@ -1,5 +1,4 @@
 from typing import Dict, List, Tuple, Optional
-import json
 import re
 
 from bot.constants import LANGS
@@ -21,10 +20,10 @@ async def search_rootme_user_all_langs(username: str) -> List[Dict[str, str]]:
 async def search_rootme_user(username: str) -> Optional[List]:
     result_id_user = re.findall(r'-(\d+)$', username)
     if result_id_user:
-        id_user = result_id_user[0]
+        id_user = int(result_id_user[0])
         content = await Parser.extract_rootme_profile_complete(id_user)
         real_username = '-'.join(username.split('-')[:-1])
-        if content is not None and json.loads(content)['nom'] != real_username:  # content might be None if score = 0
+        if content is not None and content['nom'] != real_username:  # content might be None if score = 0
             return None
         all_users = await search_rootme_user_all_langs(real_username)
         if not all_users:
@@ -32,6 +31,7 @@ async def search_rootme_user(username: str) -> Optional[List]:
         if id_user not in [int(user['id_auteur']) for user in all_users]:
             return None
         #  username = real_username
+        all_users = [user for user in all_users if user['id_auteur'] == str(id_user)]
     else:
         all_users = await search_rootme_user_all_langs(username)
         if not all_users:
@@ -43,7 +43,7 @@ async def search_rootme_user(username: str) -> Optional[List]:
             all_users_complete.append(dict(
                 id_user=user['id_auteur'],
                 username=user_data['nom'],
-                score=user_data['score'],
+                score=int(user_data['score']),
                 number_challenge_solved=len(user_data['validations'])
             ))
         else:  # user exists but score is equal to zero
