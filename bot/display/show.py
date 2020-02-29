@@ -8,7 +8,7 @@ from discord.ext.commands.bot import Bot
 from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
-from bot.api.fetch import user_rootme_exists, get_scores, get_solved_challenges, get_diff, \
+from bot.api.fetch import search_rootme_user, get_scores, get_solved_challenges, get_diff, \
     get_challenges, get_category, get_remain
 from bot.api.parser import Parser
 from bot.colors import blue, green, red
@@ -64,17 +64,31 @@ async def display_lang(db: DatabaseManager, id_discord_server: int, bot: Bot, la
 
 async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot, name: str) -> str:
     """ Check if user exist in RootMe """
-    lang = await db.get_server_language(id_discord_server)
-    user_exists = await user_rootme_exists(name, lang)
-    if not user_exists:
+    all_users = await search_rootme_user(name)
+    if not all_users:
         return add_emoji(bot, f'RootMe profile for {name} can\'t be established', emoji3)
 
+    if len(all_users) > 1:
+        tosend = f'Several users exists with the following username: "{name}"\nYou might want to choose between these:\n'
+        all_users_usernames = [user['username'] for user in all_users]
+        all_users = all_users[:10]  # select top 10
+        if len(list(set(all_users_usernames))) == 1:  # same username with different id_user
+            for user in all_users:
+                tosend += f'• {user["username"]}-{user["id_user"]} (Score: {user["score"]})\n'
+        else:
+            for user in all_users:
+                tosend += f'• {user["username"]} (Score: {user["score"]})\n'
+        return add_emoji(bot, tosend, emoji3)
+
     """ Add user to database """
-    if await db.user_exists(id_discord_server, name):
-        return add_emoji(bot, f'User {name} already exists in team', emoji5)
+    user = all_users[0]
+    if await db.user_exists(id_discord_server, user['username']):
+        return add_emoji(bot, f'User "{name}" already exists in team', emoji5)
     else:
-        last_challenge_solved = await get_last_challenge(name, lang)
-        await db.create_user(id_discord_server, name, last_challenge_solved=last_challenge_solved)
+        #  number_challenge_solved = await get_number_challenge_solved(name, lang)
+        await db.create_user(
+            id_discord_server, user['id_user'], user['username'], user['number_challenge_solved']
+        )
         return add_emoji(bot, f'User {name} successfully added in team', emoji2)
 
 

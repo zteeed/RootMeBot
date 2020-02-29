@@ -1,11 +1,60 @@
 from typing import Dict, List, Tuple, Optional
+import json
+import re
 
+from bot.constants import LANGS
 from bot.api.parser import Parser
 from bot.colors import red
 
 
-async def user_rootme_exists(user: str, lang: str):
-    return await Parser.extract_rootme_profile(user, lang) is not None
+async def search_rootme_user_all_langs(username: str) -> List[Dict[str, str]]:
+    all_users = []
+    for lang in LANGS:
+        content = await Parser.extract_rootme_profile(username, lang)
+        if content is None:
+            continue
+        content = content[0]
+        all_users += list(content.values())
+    return all_users
+
+
+async def search_rootme_user(username: str) -> Optional[List]:
+    result_id_user = re.findall(r'-(\d+)$', username)
+    if result_id_user:
+        id_user = result_id_user[0]
+        content = await Parser.extract_rootme_profile_complete(id_user)
+        real_username = '-'.join(username.split('-')[:-1])
+        if content is not None and json.loads(content)['nom'] != real_username:  # content might be None if score = 0
+            return None
+        all_users = await search_rootme_user_all_langs(real_username)
+        if not all_users:
+            return None
+        if id_user not in [int(user['id_auteur']) for user in all_users]:
+            return None
+        #  username = real_username
+    else:
+        all_users = await search_rootme_user_all_langs(username)
+        if not all_users:
+            return None
+    all_users_complete = []
+    for user in all_users:
+        user_data = await Parser.extract_rootme_profile_complete(user['id_auteur'])
+        if user_data is not None:
+            all_users_complete.append(dict(
+                id_user=user['id_auteur'],
+                username=user_data['nom'],
+                score=user_data['score'],
+                number_challenge_solved=len(user_data['validations'])
+            ))
+        else:  # user exists but score is equal to zero
+            all_users_complete.append(dict(
+                id_user=user['id_auteur'],
+                username=user['nom'],
+                score=0,
+                number_challenge_solved=0
+            ))
+    all_users_complete = sorted(all_users_complete, key=lambda x: int(x['score']), reverse=True)
+    return all_users_complete
 
 
 async def get_scores(users: List[str], lang: str):

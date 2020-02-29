@@ -1,17 +1,18 @@
-from typing import Any, Dict, Optional
-from dotenv import load_dotenv
+import sys
+from os import environ
+from typing import Any, List, Dict, Optional, Union
 
 import aiohttp
 import aiohttp.client_exceptions
 import aiohttp.client_reqrep
-from os import environ
-import sys
+from dotenv import load_dotenv
 
-from bot.colors import green, red
+from bot.colors import red
 from bot.constants import URL, timeout
 
 load_dotenv()
-response_content_type = Optional[Dict[str, Any]]
+response_profile = Optional[List[Dict[str, Any]]]
+response_profile_complete = Optional[Dict[str, Any]]
 
 ROOTME_ACCOUNT_LOGIN = environ.get('ROOTME_ACCOUNT_LOGIN')
 ROOTME_ACCOUNT_PASSWORD = environ.get('ROOTME_ACCOUNT_PASSWORD')
@@ -29,7 +30,7 @@ async def get_cookies():
             sys.exit(0)
 
 
-async def request_to(url: str) -> response_content_type:
+async def request_to(url: str) -> response_profile:
     global cookies
     async with aiohttp.ClientSession() as session:
         async with session.get(url, cookies=cookies, timeout=timeout) as response:
@@ -45,7 +46,7 @@ async def request_to(url: str) -> response_content_type:
                 return None
 
 
-async def extract_json(url: str) -> response_content_type:
+async def extract_json(url: str) -> response_profile:
     data = await request_to(url)
     if data is None:
         red(url)
@@ -55,19 +56,23 @@ async def extract_json(url: str) -> response_content_type:
 class Parser:
 
     @staticmethod
-    async def extract_default(lang: str) -> response_content_type:
+    async def extract_default(lang: str) -> response_profile:
         return await extract_json(f'{URL}/{lang}')
 
     @staticmethod
-    async def extract_rootme_profile(user: str, lang: str) -> response_content_type:
-        return await extract_json(f'{URL}/{lang}/{user}/profile')
+    async def extract_rootme_profile(user: str, lang: str) -> response_profile:
+        return await extract_json(f'{URL}/auteurs?nom={user}&lang={lang}')
 
     @staticmethod
-    async def extract_rootme_details(user: str, lang: str) -> response_content_type:
+    async def extract_rootme_profile_complete(id_user: Union[int, str]) -> response_profile_complete:
+        return await extract_json(f'{URL}/auteurs/{id_user}')
+
+    @staticmethod
+    async def extract_rootme_details(user: str, lang: str) -> response_profile:
         return await extract_json(f'{URL}/{lang}/{user}/details')
 
     @staticmethod
-    async def extract_rootme_stats(user: str, lang: str) -> response_content_type:
+    async def extract_rootme_stats(user: str, lang: str) -> response_profile:
         return await extract_json(f'{URL}/{lang}/{user}/stats')
 
     @staticmethod
@@ -76,5 +81,5 @@ class Parser:
         return rootme_profile[0]['score']
 
     @staticmethod
-    async def extract_categories(lang: str) -> response_content_type:
+    async def extract_categories(lang: str) -> response_profile:
         return await extract_json(f'{URL}/challenges?lang={lang}')

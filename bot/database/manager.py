@@ -70,9 +70,10 @@ class DatabaseManager:
         users = data['users']
         return self.find_user(users, id_discord_server, username) is not None
 
-    async def create_user(self, id_discord_server: int, username: str, last_challenge_solved: Optional[str] = None):
-        new_user = dict(id_discord_server=id_discord_server, rootme_username=username,
-                        last_challenge_solve=last_challenge_solved)
+    async def create_user(self, id_discord_server: int, rootme_user_id: int, username: str,
+                          number_challenge_solved: int):
+        new_user = dict(id_discord_server=id_discord_server, rootme_user_id=rootme_user_id, rootme_username=username,
+                        number_challenge_solved=number_challenge_solved)
         data = await self.read_data()
         data['users'].append(new_user)
         await self.write_data(data)
