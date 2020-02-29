@@ -1,6 +1,5 @@
 import difflib
 from datetime import datetime, timedelta
-from html import unescape
 from typing import Dict, List, Optional, Tuple, Union
 
 from discord.channel import TextChannel
@@ -9,7 +8,7 @@ from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
 from bot.api.fetch import search_rootme_user, get_scores, get_solved_challenges, get_diff, \
-    get_challenges, get_category, get_remain
+    get_challenges, get_remain
 from bot.api.parser import Parser
 from bot.colors import blue, green, red
 from bot.constants import LANGS, emoji2, emoji3, emoji5, limit_size, medals
