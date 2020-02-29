@@ -89,23 +89,6 @@ async def get_challenges(lang: str):
     return await Parser.extract_categories(lang)
 
 
-async def get_categories_light(lang: str):
-    categories = await Parser.extract_categories(lang)
-    result = []
-    for category in categories:
-        c = category[0]
-        result.append({'name': c['name'], 'challenges_nb': c['challenges_nb']})
-    return result
-
-
-async def get_category(category_selected: str, lang: str):
-    categories = await Parser.extract_categories(lang)
-    for category in categories:
-        if category[0]['name'] == category_selected:
-            return category
-    return None
-
-
 async def get_solved_challenges(user: str, lang: str):
     solved_challenges_data = await Parser.extract_rootme_stats(user, lang)
     if solved_challenges_data is None:

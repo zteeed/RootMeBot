@@ -64,16 +64,6 @@ class RootMeBot:
             """ """
             await disp.scoreboard(self.db, context)
 
-        @self.bot.command(description='Show list of categories.')
-        async def categories(context: commands.context.Context):
-            """ """
-            await disp.categories(self.db, context)
-
-        @self.bot.command(description='Show list of challenges from a category.')
-        async def category(context: commands.context.Context):
-            """ <category> """
-            await disp.category(self.db, context)
-
         @self.bot.command(description='Return who solved a specific challenge.')
         async def who_solved(context: commands.context.Context):
             """ <challenge> """

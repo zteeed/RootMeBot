@@ -94,26 +94,6 @@ async def scoreboard(db: DatabaseManager, context: Context) -> None:
     await interrupt(context.message.channel, tosend, embed_color=0x4200d4, embed_name="Scoreboard")
 
 
-async def categories(db: DatabaseManager, context: Context) -> None:
-    lang = await db.get_server_language(context.guild.id)
-    tosend = await show.display_categories(lang)
-    await interrupt(context.message.channel, tosend, embed_color=0xB315A8, embed_name="Categories")
-
-
-async def category(db: DatabaseManager, context: Context) -> None:
-    lang = await db.get_server_language(context.guild.id)
-    args = get_command_args(context)
-
-    if len(args) != 1:
-        tosend = f'Use {context.bot.command_prefix}{context.command} {context.command.help.strip()}'
-        await interrupt(context.message.channel, tosend, embed_color=0xD81948, embed_name="ERROR")
-        return
-
-    tosend = await show.display_category(lang, args[0])
-    embed_name = f"Category {args[0]}"
-    await interrupt(context.message.channel, tosend, embed_color=0xB315A8, embed_name=embed_name)
-
-
 async def who_solved(db: DatabaseManager, context: Context) -> None:
     challenge = ' '.join(context.message.content.strip().split(' ')[1:])
     challenge_selected = unescape(challenge.strip())
