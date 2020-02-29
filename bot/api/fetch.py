@@ -86,7 +86,7 @@ async def get_remain(username: str, lang: str, category: Optional[str] = None) -
 
 
 async def get_challenges(lang: str):
-    return await Parser.extract_categories(lang)
+    return await Parser.extract_challenges(lang)
 
 
 async def get_solved_challenges(user: str, lang: str):

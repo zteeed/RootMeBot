@@ -37,7 +37,6 @@ async def request_to(url: str) -> response_profile:
             if response.url.host not in URL:  # website page is returned not API (api.www.root-me.org / www.root-me.org)
                 return None
             if response.status == 200:
-                print(await response.json())
                 return await response.json()
             elif response.status == 401:
                 cookies = await get_cookies()
@@ -68,6 +67,15 @@ class Parser:
         return await extract_json(f'{URL}/auteurs/{id_user}')
 
     @staticmethod
+    async def extract_challenges(lang: str) -> response_profile:
+        return await extract_json(f'{URL}/challenges?lang={lang}')
+
+    @staticmethod
+    async def extract_challenge_info(id_challenge: Union[int, str]) -> response_profile_complete:
+        return await extract_json(f'{URL}/challenges/{id_challenge}')
+
+    """
+    @staticmethod
     async def extract_rootme_details(user: str, lang: str) -> response_profile:
         return await extract_json(f'{URL}/{lang}/{user}/details')
 
@@ -79,7 +87,4 @@ class Parser:
     async def extract_score(user: str, lang: str) -> int:
         rootme_profile = await Parser.extract_rootme_profile(user, lang)
         return rootme_profile[0]['score']
-
-    @staticmethod
-    async def extract_categories(lang: str) -> response_profile:
-        return await extract_json(f'{URL}/challenges?lang={lang}')
+    """

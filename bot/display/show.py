@@ -335,25 +335,26 @@ def next_challenge_solved(solved_user: List[Dict[str, Union[str, int]]], challen
 
 
 async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Optional[str], Optional[str]]:
-    lang = await db.get_server_language(id_discord_server)
     users = await db.select_users(id_discord_server)
     for user in users:
-        last = user['last_challenge_solve']
-        solved_user = await get_solved_challenges(user['rootme_username'], lang)
-        if not solved_user or solved_user[-1]['name'] == last:
+        number_challenge_solved, score = user['number_challenge_solved'], user['score']
+        user_data = await Parser.extract_rootme_profile_complete(user['rootme_user_id'])
+        if len(user_data['validations']) == number_challenge_solved:
             continue
-        blue(solved_user[-1]['name'] + "  |  " + last + "\n")
-        next_chall = next_challenge_solved(solved_user, last)
-        if next_chall is None:
-            red(f'Error with {user} --> last chall: {solved_user[-1]["name"]}\n')
-            continue
-        name = f'New challenge solved by {user["rootme_username"]}'
-        c = find_challenge(db, lang, next_chall['name'])
-        green(f'{user} --> {c["name"]}')
-        tosend = f' • {c["name"]} ({c["value"]} points)'
-        tosend += f'\n • Difficulty: {c["difficulty"]}'
-        tosend += f'\n • Date: {next_chall["date"]}'
-        tosend += f'\n • New score: {next_chall["score_at_date"]}'
-        await db.update_user_last_challenge(id_discord_server, user['rootme_username'], c['name'])
-        return name, tosend
+        new_challenges_solved = user_data['validations'][:-number_challenge_solved][::-1]  # last solved + reverse order
+        new_challenge = new_challenges_solved[0]
+
+        challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
+        score += int(challenge_info['score'])
+
+        green(f'{user["rootme_username"]} --> {challenge_info["titre"]}')
+        message_title = f'New challenge solved by {user["rootme_username"]}'
+        tosend = f' • {challenge_info["titre"]} ({challenge_info["score"]} points)'
+        tosend += f'\n • Category: {challenge_info["rubrique"]}'
+        #  tosend += f'\n • URL: {challenge_info["url_challenge"]}'
+        tosend += f'\n • Difficulty: {challenge_info["difficulte"]}'
+        tosend += f'\n • Date: {new_challenge["date"]}'
+        tosend += f'\n • New score: {score}'
+        await db.update_user_last_challenge(id_discord_server, user['rootme_username'], number_challenge_solved + 1)
+        return message_title, tosend
     return None, None
