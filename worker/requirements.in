@@ -1,6 +1,0 @@
-aioredis
-hiredis
-requests
-lxml
-structlog
-pytest
