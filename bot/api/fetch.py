@@ -36,12 +36,8 @@ async def get_remain(username: str, lang: str, category: Optional[str] = None) -
         return category_stats['num_challenges_solved'], category_stats['total_challenges_category']
 
 
-async def get_categories(lang: str):
-    categories = await Parser.extract_categories(lang)
-    result = []
-    for category in categories:
-        result.append(category[0])
-    return result
+async def get_challenges(lang: str):
+    return await Parser.extract_categories(lang)
 
 
 async def get_categories_light(lang: str):

@@ -9,7 +9,7 @@ from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
 from bot.api.fetch import user_rootme_exists, get_scores, get_solved_challenges, get_diff, \
-    get_categories, get_category, get_remain
+    get_challenges, get_category, get_remain
 from bot.api.parser import Parser
 from bot.colors import blue, green, red
 from bot.constants import LANGS, emoji2, emoji3, emoji5, limit_size, medals
@@ -105,7 +105,7 @@ async def display_scoreboard(db: DatabaseManager, id_discord_server: int) -> str
 
 async def display_categories(lang: str) -> str:
     tosend = ''
-    categories = await get_categories(lang)
+    categories = await get_challenges(lang)
     for category in categories:
         tosend += f' • {category["name"]} ({category["challenges_nb"]} challenges) \n'
     return tosend

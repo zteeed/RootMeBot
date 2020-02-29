@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 
 import bot.display.embed as disp
-from bot.api.fetch import get_categories
+from bot.api.fetch import get_challenges
 from bot.colors import green, red
 from bot.constants import LANGS, FILENAME
 from bot.database.manager import DatabaseManager
@@ -126,7 +126,7 @@ def init_rootme_challenges():
     rootme_challenges = {}
     for lang in LANGS:
         loop = asyncio.get_event_loop()  # event loop
-        future = asyncio.ensure_future(get_categories(lang))  # tasks to do
+        future = asyncio.ensure_future(get_challenges(lang))  # tasks to do
         challenges = loop.run_until_complete(future)  # loop until done
         rootme_challenges[lang] = challenges
     return rootme_challenges

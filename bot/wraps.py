@@ -6,7 +6,7 @@ import bot.api.fetch as json_data
 def update_challenges(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        result = json_data.get_categories()
+        result = json_data.get_challenges()
         if result is not None:
             self.bot.rootme_challenges = result
         return f(*args, **kwargs)

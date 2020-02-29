@@ -40,20 +40,15 @@ async def request_to(url: str) -> response_content_type:
                 return await response.json()
             elif response.status == 401:
                 cookies = await get_cookies()
-                await request_to(url)
+                return await request_to(url)
             else:
                 return None
 
 
 async def extract_json(url: str) -> response_content_type:
     data = await request_to(url)
-    print(data)
     if data is None:
         red(url)
-    else:
-        green(url)
-        if 'body' in data.keys():
-            data = data['body']
     return data
 
 
