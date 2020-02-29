@@ -11,7 +11,7 @@ DEFAULT_LANG = 'en'
 LANGS = ['en', 'fr', 'de', 'es']
 FILENAME = 'data/data.json'
 VERSION = '1.2'
-GITHUB_REPOSITORY = 'https://github.com/zteeed/Root-Me-API'
+GITHUB_REPOSITORY = 'https://github.com/zteeed/RootMeBot'
 ROOTME_WEBSITE = 'https://www.root-me.org'
 PROJECT_INFORMATION = {
     'title': 'Project information',
