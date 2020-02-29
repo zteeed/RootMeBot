@@ -15,8 +15,7 @@ GITHUB_REPOSITORY = 'https://github.com/zteeed/Root-Me-API'
 ROOTME_WEBSITE = 'https://www.root-me.org'
 PROJECT_INFORMATION = {
     'title': 'Project information',
-    'content': f'This Discord Bot uses a custom API which sends tasks to several workers.\nEach worker makes requests '
-    f'to the [RootMe]({ROOTME_WEBSITE}) website, parses the collected data using the DOM and stores it into '
-    f'redis streams.\nGithub repository: [{GITHUB_REPOSITORY}]({GITHUB_REPOSITORY})',
+    'content': f'This Discord Bot uses the official RootMe API\n'
+               f'Github repository: [{GITHUB_REPOSITORY}]({GITHUB_REPOSITORY})',
     'footer': f'Root Me Discord Bot v{VERSION}'
 }
