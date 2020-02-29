@@ -1,14 +1,21 @@
 import asyncio
 import sys
+from os import environ
+from dotenv import load_dotenv
 
 from discord.ext import commands
 
 import bot.display.embed as disp
 from bot.api.fetch import get_categories
 from bot.colors import green, red
-from bot.constants import LANGS, FILENAME, bot_channel, token
+from bot.constants import LANGS, FILENAME
 from bot.database.manager import DatabaseManager
 from bot.wraps import update_challenges
+
+
+load_dotenv()
+TOKEN = environ.get('TOKEN')
+BOT_CHANNEL = environ.get('BOT_CHANNEL')
 
 
 class RootMeBot:
@@ -23,7 +30,7 @@ class RootMeBot:
         while not self.bot.is_closed():
             for server in self.bot.guilds:  # loop over servers where bot is currently active
                 for channel in server.channels:
-                    if str(channel) == bot_channel:  # send data only in the right channel
+                    if str(channel) == BOT_CHANNEL:  # send data only in the right channel
                         await disp.cron(channel, server, self.db, self.bot)
             await asyncio.sleep(1)
 
@@ -110,12 +117,9 @@ class RootMeBot:
             await disp.reset_database(db, context)
 
     def start(self):
-        if token == 'token':
-            red('Please update your token in ./bot/constants.py')
-            sys.exit(0)
         self.catch()
         self.bot.loop.create_task(self.cron())
-        self.bot.run(token)
+        self.bot.run(TOKEN)
 
 
 def init_rootme_challenges():

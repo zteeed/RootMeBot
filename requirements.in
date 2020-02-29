@@ -3,3 +3,4 @@ asyncio
 bootstrap-difflib
 discord
 discord.py
+python-dotenv
