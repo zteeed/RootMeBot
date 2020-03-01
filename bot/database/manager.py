@@ -96,9 +96,3 @@ class DatabaseManager:
     async def select_users(self, id_discord_server: int):
         data = await self.read_data()
         return [user for user in data['users'] if user['id_discord_server'] == id_discord_server]
-
-    async def get_last_challenge_solved(self, id_discord_server: int, username: str) -> str:
-        data = await self.read_data()
-        users = data['users']
-        user = self.find_user(users, id_discord_server, username)
-        return user['last_challenge_solve']

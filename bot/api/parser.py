@@ -55,10 +55,6 @@ async def extract_json(url: str) -> response_profile:
 class Parser:
 
     @staticmethod
-    async def extract_default(lang: str) -> response_profile:
-        return await extract_json(f'{URL}/{lang}')
-
-    @staticmethod
     async def extract_rootme_profile(user: str, lang: str) -> response_profile:
         return await extract_json(f'{URL}/auteurs?nom={user}&lang={lang}')
 
@@ -73,18 +69,3 @@ class Parser:
     @staticmethod
     async def extract_challenge_info(id_challenge: Union[int, str]) -> response_profile_complete:
         return await extract_json(f'{URL}/challenges/{id_challenge}')
-
-    """
-    @staticmethod
-    async def extract_rootme_details(user: str, lang: str) -> response_profile:
-        return await extract_json(f'{URL}/{lang}/{user}/details')
-
-    @staticmethod
-    async def extract_rootme_stats(user: str, lang: str) -> response_profile:
-        return await extract_json(f'{URL}/{lang}/{user}/stats')
-
-    @staticmethod
-    async def extract_score(user: str, lang: str) -> int:
-        rootme_profile = await Parser.extract_rootme_profile(user, lang)
-        return rootme_profile[0]['score']
-    """

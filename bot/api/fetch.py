@@ -57,17 +57,7 @@ async def search_rootme_user(username: str) -> Optional[List]:
     return all_users_complete
 
 
-async def get_scores(users: List[str], lang: str):
-    scores = [await Parser.extract_score(user, lang) for user in users]
-    scores = [int(score) for score in scores]
-    """ Sort users by score desc """
-    return [{'name': x, 'score': int(y)} for y, x in sorted(zip(scores, users), reverse=True)]
-
-
-async def get_details(username: str, lang: str):
-    return await Parser.extract_rootme_details(username, lang)
-
-
+"""
 def get_stats_category(categories_stats: List[Dict], category: str) -> Optional[Dict[str, int]]:
     for category_stats in categories_stats:
         category_name = category_stats['name'].replace(' ', '')
@@ -83,6 +73,7 @@ async def get_remain(username: str, lang: str, category: Optional[str] = None) -
     else:
         category_stats = get_stats_category(details['categories'], category)
         return category_stats['num_challenges_solved'], category_stats['total_challenges_category']
+"""
 
 
 async def get_challenges(lang: str):
