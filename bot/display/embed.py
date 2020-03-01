@@ -45,18 +45,6 @@ async def info(context: Context) -> None:
     await interrupt(context.message.channel, tosend, embed_color=0xF4900C, embed_name=title)
 
 
-async def lang(db: DatabaseManager, context: Context) -> None:
-    args = get_command_args(context)
-
-    if len(args) != 1:
-        tosend = f'Use {context.bot.command_prefix}{context.command} {context.command.help.strip()}'
-        await interrupt(context.message.channel, tosend, embed_color=0xD81948, embed_name="ERROR")
-        return
-
-    tosend = await show.display_update_lang(db, context.guild.id, context.bot, args[0])
-    await interrupt(context.message.channel, tosend, embed_color=0x16B841, embed_name="Update lang")
-
-
 async def add_user(db: DatabaseManager, context: Context) -> None:
     args = get_command_args(context)
 

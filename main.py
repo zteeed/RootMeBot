@@ -43,11 +43,6 @@ class RootMeBot:
             """ """
             await disp.info(context)
 
-        @self.bot.command(description='Update language used to display API content.')
-        async def lang(context: commands.context.Context):
-            """ <lang> """
-            await disp.lang(self.db, context)
-
         @self.bot.command(description='Add a user to team into database.')
         async def add_user(context: commands.context.Context):
             """ <username> """

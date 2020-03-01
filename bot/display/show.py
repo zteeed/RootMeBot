@@ -32,16 +32,6 @@ def display_parts(message: str) -> List[str]:
     return stored
 
 
-async def display_update_lang(db: DatabaseManager, id_discord_server: int, bot: Bot, lang: str) -> str:
-    if lang not in LANGS:
-        return add_emoji(bot, f'You need to choose fr/en/de/es as <lang> argument', emoji3)
-    old_lang = await db.get_server_language(id_discord_server)
-    if old_lang == lang:
-        return add_emoji(bot, f'"{lang}" is already the current language used.', emoji3)
-    await db.update_server_language(id_discord_server, lang)
-    return add_emoji(bot, f'Language updated from "{old_lang}" to "{lang}" successfully..', emoji2)
-
-
 async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot, name: str) -> str:
     """ Check if user exist in RootMe """
     all_users = await search_rootme_user(name)
@@ -65,7 +55,6 @@ async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot
     if await db.user_exists(id_discord_server, user['username']):
         return add_emoji(bot, f'User "{name}" already exists in team', emoji5)
     else:
-        #  number_challenge_solved = await get_number_challenge_solved(name, lang)
         await db.create_user(
             id_discord_server, user['id_user'], user['username'], user['score'], user['number_challenge_solved']
         )
@@ -202,7 +191,6 @@ async def display_diff(db: DatabaseManager, id_discord_server: int, username1: s
         tosend_list = [{'user': username2, 'msg': tosend}]
         return tosend_list
 
-    #  lang = await db.get_server_language(id_discord_server)
     database_users = await db.select_users(id_discord_server)
     user1 = db.find_user(database_users, id_discord_server, username1)
     user2 = db.find_user(database_users, id_discord_server, username2)
@@ -255,16 +243,6 @@ async def display_reset_database(db: DatabaseManager, id_discord_server: int, bo
     for name in usernames:
         await db.delete_user(id_discord_server, name)
     return add_emoji(bot, f'Database has been successfully reset', emoji2)
-
-
-def next_challenge_solved(solved_user: List[Dict[str, Union[str, int]]], challenge_name: str) \
-        -> Optional[Dict[str, Union[str, int]]]:
-    if len(solved_user) == 1:
-        return solved_user[-1]
-    for key, chall in enumerate(solved_user[:-1]):
-        if chall['name'] == challenge_name:
-            return solved_user[1 + key]
-    return None
 
 
 async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Optional[str], Optional[str]]:
