@@ -92,6 +92,14 @@ class DatabaseManager:
         user['number_challenge_solved'] = number_challenge_solved
         await self.write_data(data)
 
+    async def update_user_info(self, id_discord_server: int, username: str, score: int, number_challenge_solved: int):
+        data = await self.read_data()
+        users = data['users']
+        user = self.find_user(users, id_discord_server, username)
+        user['score'] = score
+        user['number_challenge_solved'] = number_challenge_solved
+        await self.write_data(data)
+
     async def select_users(self, id_discord_server: int):
         data = await self.read_data()
         return [user for user in data['users'] if user['id_discord_server'] == id_discord_server]

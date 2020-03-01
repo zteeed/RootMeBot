@@ -355,6 +355,6 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
         tosend += f'\n • Difficulty: {challenge_info["difficulte"]}'
         tosend += f'\n • Date: {new_challenge["date"]}'
         tosend += f'\n • New score: {score}'
-        await db.update_user_last_challenge(id_discord_server, user['rootme_username'], number_challenge_solved + 1)
+        await db.update_user_info(id_discord_server, user['rootme_username'], score, number_challenge_solved + 1)
         return message_title, tosend
     return None, None
