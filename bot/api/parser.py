@@ -72,5 +72,5 @@ class Parser:
         return await extract_json(f'{URL}/challenges/{id_challenge}')
 
     @staticmethod
-    async def find_challenge(challenge_title: str, lang: str) -> response_profile_complete:
-        return await extract_json(f'{URL}/challenges?titre={challenge_title}&lang={lang}')
+    async def find_challenge(challenge_title: str) -> response_profile_complete:
+        return await extract_json(f'{URL}/challenges?titre={challenge_title}')

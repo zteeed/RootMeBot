@@ -3,8 +3,6 @@ from typing import Any, List, Dict, Optional, Union
 
 import aiofiles
 
-from bot.constants import DEFAULT_LANG
-
 users_type = List[Dict[str, str]]
 user_type = Dict[str, str]
 servers_type = List[Dict[str, Union[int, str]]]
@@ -37,7 +35,7 @@ class DatabaseManager:
 
     async def register_server(self, id_discord_server: int):
         data = await self.read_data()
-        data['discord_servers'].append({'id': id_discord_server, 'lang': DEFAULT_LANG})
+        data['discord_servers'].append({'id': id_discord_server})
         await self.write_data(data)
 
     @staticmethod

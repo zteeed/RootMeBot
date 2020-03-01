@@ -7,7 +7,6 @@ limit_size = 1000
 medals = [':first_place:', ':second_place:', ':third_place:']
 timeout = 15
 URL = 'https://api.www.root-me.org'
-DEFAULT_LANG = 'en'
 LANGS = ['en', 'fr', 'de', 'es']
 FILENAME = 'data/data.json'
 VERSION = '1.2'

@@ -90,9 +90,8 @@ def user_has_solved(challenge_selected: str, solved_challenges: List[Dict[str, U
 
 async def display_who_solved(db: DatabaseManager, id_discord_server: int, challenge_title_query: str) \
         -> Tuple[Optional[str], Optional[str]]:
-    lang = await db.get_server_language(id_discord_server)
 
-    challenge_found = await Parser.find_challenge(challenge_title_query, lang)
+    challenge_found = await Parser.find_challenge(challenge_title_query)
     if not challenge_found:
         return f'Challenge "{challenge_title_query}" cannot be found in challenge list.', challenge_title_query
 
