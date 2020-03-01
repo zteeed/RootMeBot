@@ -99,8 +99,8 @@ async def who_solved(db: DatabaseManager, context: Context) -> None:
         await interrupt(context.message.channel, tosend, embed_color=0xD81948, embed_name="ERROR")
         return
 
-    tosend = await show.display_who_solved(db, context.guild.id, challenge_selected)
-    embed_name = f"Who solved {challenge_selected} ?"
+    tosend, challenge_title = await show.display_who_solved(db, context.guild.id, challenge_selected)
+    embed_name = f"Who solved {challenge_title} ?"
     await interrupt(context.message.channel, tosend, embed_color=0x29C1C5, embed_name=embed_name)
 
 

@@ -121,31 +121,36 @@ def user_has_solved(challenge_selected: str, solved_challenges: List[Dict[str, U
     return True in test
 
 
-async def display_who_solved(db: DatabaseManager, id_discord_server: int, challenge_selected: str) -> Optional[str]:
+async def display_who_solved(db: DatabaseManager, id_discord_server: int, challenge_title_query: str) \
+        -> Tuple[Optional[str], Optional[str]]:
     lang = await db.get_server_language(id_discord_server)
-    challenge_found = find_challenge(db, lang, challenge_selected)
-    if challenge_found is None:
-        suggestions = find_challenge_suggestions(db, lang, challenge_selected)
-        if suggestions:
-            suggestion = suggestions[0]
-            return f'Challenge {challenge_selected} does not exists.\nAre you looking for "{suggestion}" ?'
-        return f'Challenge {challenge_selected} does not exists.'
+
+    challenge_found = await Parser.find_challenge(challenge_title_query, lang)
+    if not challenge_found:
+        return f'Challenge "{challenge_title_query}" cannot be found in challenge list.', challenge_title_query
+
+    challenges = list(challenge_found[0].values())
+    if len(challenges) > 1:
+        tosend = f'Several challenges exists with the following challenge title query: "{challenge_title_query}"\n' \
+            f'You might want to choose between these:\n'
+        for challenge in challenges:
+            tosend += f'• {challenge["titre"]}\n'
+        return tosend, challenge_title_query
 
     tosend = ''
+    rootme_challenge_selected = challenges[0]
     users = await db.select_users(id_discord_server)
-    usernames = [user['rootme_username'] for user in users]
-    lang = await db.get_server_language(id_discord_server)
-    scores = await get_scores(usernames, lang)
-    for d in scores:
-        user, score = d['name'], d['score']
-        solved_challenges = await get_solved_challenges(user, lang)
-        if solved_challenges is None:
-            return None
-        if user_has_solved(challenge_selected, solved_challenges):
-            tosend += f' • {user}\n'
+    users = sorted(users, key=lambda x: x['score'], reverse=True)
+    for user in users:
+        user_info = await Parser.extract_rootme_profile_complete(user['rootme_user_id'])
+        challenge_solved = user_info['validations']
+        challenge_solved_ids = [challenge['id_challenge'] for challenge in challenge_solved]
+        if rootme_challenge_selected['id_challenge'] not in challenge_solved_ids:
+            continue  # user did not solve selected_challenge
+        tosend += f' • {user["rootme_username"]}\n'
     if not tosend:
-        tosend = f'Nobody solves {challenge_selected}.'
-    return tosend
+        tosend = f'Nobody solved "{rootme_challenge_selected["titre"]}".'
+    return tosend, rootme_challenge_selected["titre"]
 
 
 async def display_remain(db: DatabaseManager, id_discord_server: int, bot: Bot, username: str,
