@@ -40,14 +40,18 @@ async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot
 
     if len(all_users) > 1:
         tosend = f'Several users exists with the following username: "{name}"\nYou might want to choose between these:\n'
-        all_users_usernames = [user['username'] for user in all_users]
         all_users = all_users[:10]  # select top 10
+        """
+        all_users_usernames = [user['username'] for user in all_users]
         if len(list(set(all_users_usernames))) == 1:  # same username with different id_user
             for user in all_users:
                 tosend += f'• {user["username"]}-{user["id_user"]} (Score: {user["score"]})\n'
         else:
             for user in all_users:
                 tosend += f'• {user["username"]} (Score: {user["score"]})\n'
+        """
+        for user in all_users:
+            tosend += f'• {user["username"]}-{user["id_user"]} (Score: {user["score"]})\n'
         return add_emoji(bot, tosend, emoji3)
 
     """ Add user to database """
