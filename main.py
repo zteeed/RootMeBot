@@ -86,6 +86,11 @@ class RootMeBot:
             await disp.diff_with(self.db, context)
 
         @self.bot.command(description='Flush all data from bot channel excepted events')
+        async def api_query(context: commands.context.Context):
+            """ """
+            await disp.api_query(context)
+
+        @self.bot.command(description='Flush all data from bot channel excepted events')
         async def flush(context: commands.context.Context):
             """ """
             await disp.flush(context)

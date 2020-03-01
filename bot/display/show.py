@@ -268,3 +268,7 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
         await db.update_user_info(id_discord_server, user['rootme_username'], score, number_challenge_solved + 1)
         return message_title, tosend
     return None, None
+
+
+async def display_api_query(path: str) -> Optional[str]:
+    return await Parser.make_custom_query(path)

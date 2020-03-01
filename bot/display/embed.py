@@ -1,3 +1,4 @@
+import json
 from html import unescape
 from os import environ
 from typing import Dict, List, Optional
@@ -200,3 +201,16 @@ async def cron(channel: TextChannel, server: Guild, db: DatabaseManager, bot: Bo
     name, tosend_cron = await show.display_cron(server.id, db)
     if tosend_cron is not None:
         await interrupt(channel, tosend_cron, embed_color=0xFFCC00, embed_name=name)
+
+
+async def api_query(context: Context) -> None:
+    args = get_command_args(context)
+
+    if len(args) != 1:
+        tosend = f'Use {context.bot.command_prefix}{context.command} {context.command.help.strip()}'
+        await interrupt(context.message.channel, tosend, embed_color=0xD81948, embed_name="ERROR")
+        return
+
+    tosend = await show.display_api_query(args[0])
+    tosend = json.dumps(tosend, indent=4)
+    await interrupt(context.message.channel, tosend, embed_color=0xD81D32, embed_name="API custom query")
