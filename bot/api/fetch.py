@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple, Optional
 import re
 
 from bot.constants import LANGS
-from bot.api.parser import Parser
+from bot.api.parser import Parser, response_profile_complete
 from bot.colors import red
 
 
@@ -41,14 +41,14 @@ async def search_rootme_user(username: str) -> Optional[List]:
         user_data = await Parser.extract_rootme_profile_complete(user['id_auteur'])
         if user_data is not None:
             all_users_complete.append(dict(
-                id_user=user['id_auteur'],
+                id_user=int(user['id_auteur']),
                 username=user_data['nom'],
                 score=int(user_data['score']),
                 number_challenge_solved=len(user_data['validations'])
             ))
         else:  # user exists but score is equal to zero
             all_users_complete.append(dict(
-                id_user=user['id_auteur'],
+                id_user=int(user['id_auteur']),
                 username=user['nom'],
                 score=0,
                 number_challenge_solved=0
@@ -89,19 +89,19 @@ async def get_challenges(lang: str):
     return await Parser.extract_challenges(lang)
 
 
-async def get_solved_challenges(user: str, lang: str):
-    solved_challenges_data = await Parser.extract_rootme_stats(user, lang)
+async def get_solved_challenges(id_user: int) -> Optional[response_profile_complete]:
+    solved_challenges_data = await Parser.extract_rootme_profile_complete(id_user)
     if solved_challenges_data is None:
-        red(f'user {user} name might have changed in rootme profile link')
+        red(f'Error trying to fetch solved challenges.')
         return None
-    return solved_challenges_data['solved_challenges']
+    return solved_challenges_data['validations']
 
 
 def get_diff(solved_user1, solved_user2):
     if solved_user1 == solved_user2:
         return None, None
-    test1 = list(map(lambda x: x['name'], solved_user1))
-    test2 = list(map(lambda x: x['name'], solved_user2))
-    user1_diff = list(filter(lambda x: x['name'] not in test2, solved_user1))[::-1]
-    user2_diff = list(filter(lambda x: x['name'] not in test1, solved_user2))[::-1]
+    test1 = list(map(lambda x: x['id_challenge'], solved_user1))
+    test2 = list(map(lambda x: x['id_challenge'], solved_user2))
+    user1_diff = list(filter(lambda x: x['id_challenge'] not in test2, solved_user1))[::-1]
+    user2_diff = list(filter(lambda x: x['id_challenge'] not in test1, solved_user2))[::-1]
     return user1_diff, user2_diff

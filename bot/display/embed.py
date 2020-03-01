@@ -184,8 +184,8 @@ async def diff(db: DatabaseManager, context: Context) -> None:
         await interrupt(context.message.channel, tosend, embed_color=0xD81948, embed_name="ERROR")
         return
 
-    pseudo1, pseudo2 = args[0], args[1]
-    tosend_list = await show.display_diff(db, context.guild.id, context.bot, pseudo1, pseudo2)
+    username1, username2 = args[0], args[1]
+    tosend_list = await show.display_diff(db, context.guild.id, username1, username2)
     await display_by_blocks_diff(context.message.channel, tosend_list, 0xFF00FF)
 
 

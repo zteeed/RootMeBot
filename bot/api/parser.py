@@ -63,7 +63,7 @@ class Parser:
         return await extract_json(f'{URL}/auteurs?nom={user}&lang={lang}')
 
     @staticmethod
-    async def extract_rootme_profile_complete(id_user: Union[int, str]) -> response_profile_complete:
+    async def extract_rootme_profile_complete(id_user: int) -> response_profile_complete:
         return await extract_json(f'{URL}/auteurs/{id_user}')
 
     @staticmethod

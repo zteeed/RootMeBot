@@ -1,14 +1,14 @@
 import difflib
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
+from html import unescape
 
 from discord.channel import TextChannel
 from discord.ext.commands.bot import Bot
 from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
-from bot.api.fetch import search_rootme_user, get_scores, get_solved_challenges, get_diff, \
-    get_challenges, get_remain
+from bot.api.fetch import search_rootme_user, get_scores, get_solved_challenges, get_diff, get_challenges, get_remain
 from bot.api.parser import Parser
 from bot.colors import blue, green, red
 from bot.constants import LANGS, emoji2, emoji3, emoji5, limit_size, medals
@@ -32,16 +32,6 @@ def display_parts(message: str) -> List[str]:
     return stored
 
 
-async def get_last_challenge(name: str, lang: str):
-    stats_user = await Parser.extract_rootme_stats(name, lang)
-    solved_challenges = stats_user['solved_challenges']
-    if not solved_challenges:
-        last_challenge_solved = '?????'
-    else:
-        last_challenge_solved = solved_challenges[-1]['name']
-    return last_challenge_solved
-
-
 async def display_lang_check(db: DatabaseManager, id_discord_server: int, bot: Bot, lang: str) -> Tuple[str, bool]:
     if lang not in LANGS:
         return add_emoji(bot, f'You need to choose fr/en/de/es as <lang> argument', emoji3), False
@@ -51,6 +41,7 @@ async def display_lang_check(db: DatabaseManager, id_discord_server: int, bot: B
     return add_emoji(bot, f'Converting data from "{old_lang}" to "{lang}" language, please wait...', emoji2), True
 
 
+"""
 async def display_lang(db: DatabaseManager, id_discord_server: int, bot: Bot, lang: str) -> str:
     users = await db.select_users(id_discord_server)
     usernames = [user['rootme_username'] for user in users]
@@ -59,6 +50,7 @@ async def display_lang(db: DatabaseManager, id_discord_server: int, bot: Bot, la
         await db.update_user_last_challenge(id_discord_server, name, last_challenge_solved)
     await db.update_server_language(id_discord_server, lang)
     return add_emoji(bot, f'LANG successfully updated to "{lang}"', emoji2)
+"""
 
 
 async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot, name: str) -> str:
@@ -88,7 +80,7 @@ async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot
         await db.create_user(
             id_discord_server, user['id_user'], user['username'], user['score'], user['number_challenge_solved']
     )
-        return add_emoji(bot, f'User {name} successfully added in team', emoji2)
+        return add_emoji(bot, f'User {user["username"]} successfully added in team', emoji2)
 
 
 async def display_remove_user(db: DatabaseManager, id_discord_server: int, bot: Bot, name: str) -> str:
@@ -113,6 +105,7 @@ async def display_scoreboard(db: DatabaseManager, id_discord_server: int) -> str
     return tosend
 
 
+"""
 def get_challenges(categories_challenges):
     data = []
     for category in categories_challenges:
@@ -131,10 +124,11 @@ def find_challenge_suggestions(db: DatabaseManager, lang: str, challenge_selecte
     challenges = get_challenges(db.rootme_challenges[lang])
     challenge_names = [challenge['name'] for challenge in challenges]
     return difflib.get_close_matches(challenge_selected, challenge_names)
+"""
 
 
 def user_has_solved(challenge_selected: str, solved_challenges: List[Dict[str, Union[str, int]]]) -> bool:
-    test = [c['name'] == challenge_selected for c in solved_challenges]
+    test = [challenge['titre'] == challenge_selected for challenge in solved_challenges]
     return True in test
 
 
@@ -254,37 +248,41 @@ async def display_today(db: DatabaseManager, context: Context, args: Tuple[str])
 
 
 @stop_if_args_none
-def display_diff_one_side(db: DatabaseManager, lang: str, user_diff: List[Dict[str, Union[str, int]]]) -> str:
+async def display_diff_one_side(user_diff: List[Dict[str, str]]) -> str:
     tosend = ''
-    for c in user_diff:
-        value = find_challenge(db, lang, c['name'])['value']
-        tosend += f' • {c["name"]} ({value} points)\n'
+    for challenge in user_diff:
+        challenge_info = await Parser.extract_challenge_info(challenge['id_challenge'])
+        tosend += f' • {unescape(challenge_info["titre"])} ({challenge_info["score"]} points)\n'
     return tosend
 
 
-async def display_diff(db: DatabaseManager, id_discord_server: int, bot: Bot, user1: str, user2: str) \
+async def display_diff(db: DatabaseManager, id_discord_server: int, username1: str, username2: str) \
         -> List[Dict[str, Optional[str]]]:
-    if not await db.user_exists(id_discord_server, user1):
-        tosend = f'User {user1} is not in team.'
-        tosend_list = [{'user': user1, 'msg': tosend}]
+    if not await db.user_exists(id_discord_server, username1):
+        tosend = f'User {username1} is not in team.'
+        tosend_list = [{'user': username1, 'msg': tosend}]
         return tosend_list
-    if not await db.user_exists(id_discord_server, user2):
-        tosend = f'User {user2} is not in team.'
-        tosend_list = [{'user': user2, 'msg': tosend}]
+    if not await db.user_exists(id_discord_server, username2):
+        tosend = f'User {username2} is not in team.'
+        tosend_list = [{'user': username2, 'msg': tosend}]
         return tosend_list
 
-    lang = await db.get_server_language(id_discord_server)
-    solved_user1 = await get_solved_challenges(user1, lang)
-    solved_user2 = await get_solved_challenges(user2, lang)
+    #  lang = await db.get_server_language(id_discord_server)
+    database_users = await db.select_users(id_discord_server)
+    user1 = db.find_user(database_users, id_discord_server, username1)
+    user2 = db.find_user(database_users, id_discord_server, username2)
+    solved_user1 = await get_solved_challenges(user1['rootme_user_id'])
+    solved_user1 = sorted(solved_user1, key=lambda x: x['date'])  # sort challenge solved by date
+    solved_user2 = await get_solved_challenges(user2['rootme_user_id'])
+    solved_user2 = sorted(solved_user2, key=lambda x: x['date'])  # sort challenge solved by date
 
     user1_diff, user2_diff = get_diff(solved_user1, solved_user2)
     tosend_list = []
 
-    tosend = display_diff_one_side(db, lang, user1_diff)
-    tosend_list.append({'user': user1, 'msg': tosend})
-    tosend = display_diff_one_side(db, lang, user2_diff)
-    tosend_list.append({'user': user2, 'msg': tosend})
-
+    tosend = await display_diff_one_side(user1_diff)
+    tosend_list.append({'user': username1, 'msg': tosend})
+    tosend = await display_diff_one_side(user2_diff)
+    tosend_list.append({'user': username2, 'msg': tosend})
     return tosend_list
 
 
