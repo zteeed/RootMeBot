@@ -1,12 +1,9 @@
 FROM python:3.7
 
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
-COPY ./ .
+RUN pip install --upgrade pip
+COPY ./requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
+COPY ./ /app
 
-ENV BOT_CHANNEL root-me-news
-ENV TOKEN token
-ENV ROOTME_ACCOUNT_LOGIN login
-ENV ROOTME_ACCOUNT_PASSWORD password
-
+WORKDIR /app
 CMD python3 main.py

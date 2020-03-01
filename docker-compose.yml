@@ -1,0 +1,12 @@
+version: '3'
+services:
+  rootmebot:
+    build: .
+    restart: always
+    environment:
+      - BOT_CHANNEL=root-me-news
+      - TOKEN=token
+      - ROOTME_ACCOUNT_LOGIN=login
+      - ROOTME_ACCOUNT_PASSWORD=password
+    volumes:
+      - ./data/:/app/data
