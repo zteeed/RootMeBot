@@ -32,25 +32,14 @@ def display_parts(message: str) -> List[str]:
     return stored
 
 
-async def display_lang_check(db: DatabaseManager, id_discord_server: int, bot: Bot, lang: str) -> Tuple[str, bool]:
+async def display_update_lang(db: DatabaseManager, id_discord_server: int, bot: Bot, lang: str) -> str:
     if lang not in LANGS:
-        return add_emoji(bot, f'You need to choose fr/en/de/es as <lang> argument', emoji3), False
+        return add_emoji(bot, f'You need to choose fr/en/de/es as <lang> argument', emoji3)
     old_lang = await db.get_server_language(id_discord_server)
     if old_lang == lang:
-        return add_emoji(bot, f'"{lang}" is already the current language used.', emoji3), False
-    return add_emoji(bot, f'Converting data from "{old_lang}" to "{lang}" language, please wait...', emoji2), True
-
-
-"""
-async def display_lang(db: DatabaseManager, id_discord_server: int, bot: Bot, lang: str) -> str:
-    users = await db.select_users(id_discord_server)
-    usernames = [user['rootme_username'] for user in users]
-    for name in usernames:
-        last_challenge_solved = await get_last_challenge(name, lang)
-        await db.update_user_last_challenge(id_discord_server, name, last_challenge_solved)
+        return add_emoji(bot, f'"{lang}" is already the current language used.', emoji3)
     await db.update_server_language(id_discord_server, lang)
-    return add_emoji(bot, f'LANG successfully updated to "{lang}"', emoji2)
-"""
+    return add_emoji(bot, f'Language updated from "{old_lang}" to "{lang}" successfully..', emoji2)
 
 
 async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot, name: str) -> str:
@@ -286,23 +275,23 @@ async def display_diff(db: DatabaseManager, id_discord_server: int, username1: s
     return tosend_list
 
 
-async def display_diff_with(db: DatabaseManager, id_discord_server: int, bot: Bot, selected_user: str):
-    if not await db.user_exists(id_discord_server, selected_user):
-        tosend = f'User {selected_user} is not in team.'
-        tosend_list = [{'user': selected_user, 'msg': tosend}]
+async def display_diff_with(db: DatabaseManager, id_discord_server: int, bot: Bot, selected_username: str):
+    if not await db.user_exists(id_discord_server, selected_username):
+        tosend = f'User {selected_username} is not in team.'
+        tosend_list = [{'user': selected_username, 'msg': tosend}]
         return tosend_list
 
     tosend_list = []
-    lang = await db.get_server_language(id_discord_server)
     users = await db.select_users(id_discord_server)
-    users = [user['rootme_username'] for user in users]
-    solved_user_select = await get_solved_challenges(selected_user, lang)
+    selected_user = db.find_user(users, id_discord_server, selected_username)
+    solved_user_select = await get_solved_challenges(selected_user['rootme_user_id'])
+
     for user in users:
-        solved_user = await get_solved_challenges(user, lang)
+        solved_user = await get_solved_challenges(user['rootme_user_id'])
         user_diff, user_diff_select = get_diff(solved_user, solved_user_select)
         if user_diff:
-            tosend = display_diff_one_side(db, lang, user_diff)
-            tosend_list.append({'user': user, 'msg': tosend})
+            tosend = await display_diff_one_side(user_diff)
+            tosend_list.append({'user': user["rootme_username"], 'msg': tosend})
     return tosend_list
 
 
