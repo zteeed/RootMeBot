@@ -7,7 +7,7 @@ import aiohttp.client_exceptions
 import aiohttp.client_reqrep
 from dotenv import load_dotenv
 
-from bot.colors import purple, red
+from bot.colors import red
 from bot.constants import URL, timeout
 
 load_dotenv()
@@ -36,7 +36,7 @@ async def request_to(url: str) -> response_profile:
         async with session.get(url, cookies=cookies, timeout=timeout) as response:
             if response.url.host not in URL:  # website page is returned not API (api.www.root-me.org / www.root-me.org)
                 return None
-            purple(f'[{response.status}] {url}')
+            #  purple(f'[{response.status}] {url}')
             if response.status == 200:
                 return await response.json()
             elif response.status == 401:
