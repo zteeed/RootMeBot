@@ -1,9 +1,9 @@
 import asyncio
 import sys
 from os import environ
-from dotenv import load_dotenv
 
 from discord.ext import commands
+from dotenv import load_dotenv
 
 import bot.display.embed as disp
 from bot.api.fetch import get_challenges
@@ -11,7 +11,6 @@ from bot.colors import green, red
 from bot.constants import LANGS, FILENAME
 from bot.database.manager import DatabaseManager
 from bot.wraps import update_challenges
-
 
 load_dotenv()
 TOKEN = environ.get('TOKEN')

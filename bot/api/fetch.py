@@ -1,9 +1,9 @@
-from typing import Dict, List, Tuple, Optional
 import re
+from typing import Dict, List, Optional
 
-from bot.constants import LANGS
 from bot.api.parser import Parser, response_profile_complete
 from bot.colors import red
+from bot.constants import LANGS
 
 
 async def search_rootme_user_all_langs(username: str) -> List[Dict[str, str]]:

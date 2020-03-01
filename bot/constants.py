@@ -16,6 +16,6 @@ ROOTME_WEBSITE = 'https://www.root-me.org'
 PROJECT_INFORMATION = {
     'title': 'Project information',
     'content': f'This Discord Bot uses the official RootMe API\n'
-               f'Github repository: [{GITHUB_REPOSITORY}]({GITHUB_REPOSITORY})',
+    f'Github repository: [{GITHUB_REPOSITORY}]({GITHUB_REPOSITORY})',
     'footer': f'Root Me Discord Bot v{VERSION}'
 }

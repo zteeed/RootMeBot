@@ -1,16 +1,16 @@
-import difflib
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
+from datetime import datetime, timedelta
 from html import unescape
+from typing import Dict, List, Optional, Tuple, Union
 
 from discord.channel import TextChannel
 from discord.ext.commands.bot import Bot
 from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
-from bot.api.fetch import search_rootme_user, get_scores, get_solved_challenges, get_diff, get_challenges, get_remain
+from bot.api.fetch import search_rootme_user, get_solved_challenges, get_diff
 from bot.api.parser import Parser
-from bot.colors import blue, green, red
+from bot.colors import green
 from bot.constants import LANGS, emoji2, emoji3, emoji5, limit_size, medals
 from bot.database.manager import DatabaseManager
 from bot.display.update import add_emoji
@@ -68,7 +68,7 @@ async def display_add_user(db: DatabaseManager, id_discord_server: int, bot: Bot
         #  number_challenge_solved = await get_number_challenge_solved(name, lang)
         await db.create_user(
             id_discord_server, user['id_user'], user['username'], user['score'], user['number_challenge_solved']
-    )
+        )
         return add_emoji(bot, f'User {user["username"]} successfully added in team', emoji2)
 
 
