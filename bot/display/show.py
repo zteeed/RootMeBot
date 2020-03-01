@@ -94,28 +94,6 @@ async def display_scoreboard(db: DatabaseManager, id_discord_server: int) -> str
     return tosend
 
 
-"""
-def get_challenges(categories_challenges):
-    data = []
-    for category in categories_challenges:
-        data += category['challenges']
-    return data
-
-
-def find_challenge(db: DatabaseManager, lang: str, challenge_selected: str) -> challenges_type:
-    challenges = get_challenges(db.rootme_challenges[lang])
-    challenge_names = [challenge['name'] for challenge in challenges]
-    if challenge_selected in challenge_names:
-        return [challenge for challenge in challenges if challenge['name'] == challenge_selected][0]
-
-
-def find_challenge_suggestions(db: DatabaseManager, lang: str, challenge_selected: str) -> List[str]:
-    challenges = get_challenges(db.rootme_challenges[lang])
-    challenge_names = [challenge['name'] for challenge in challenges]
-    return difflib.get_close_matches(challenge_selected, challenge_names)
-"""
-
-
 def user_has_solved(challenge_selected: str, solved_challenges: List[Dict[str, Union[str, int]]]) -> bool:
     test = [challenge['titre'] == challenge_selected for challenge in solved_challenges]
     return True in test
@@ -151,35 +129,6 @@ async def display_who_solved(db: DatabaseManager, id_discord_server: int, challe
     if not tosend:
         tosend = f'Nobody solved "{rootme_challenge_selected["titre"]}".'
     return tosend, rootme_challenge_selected["titre"]
-
-
-async def display_remain(db: DatabaseManager, id_discord_server: int, bot: Bot, username: str,
-                         category: Optional[str] = None) -> Optional[str]:
-    if not await db.user_exists(id_discord_server, username):
-        return add_emoji(bot, f'User {username} is not in team', emoji5)
-
-    lang = await db.get_server_language(id_discord_server)
-    category_data = await get_category(category, lang)
-    if category is not None and category_data is None:
-        tosend = f'Category {category} does not exists.'
-        return add_emoji(bot, tosend, emoji3)
-
-    num_success, num_tot = await get_remain(username, lang, category=category)
-    remain = num_tot - num_success
-    if category is None:
-        if remain == 0:
-            tosend = f'{username} solved all challenges from all categories'
-            return add_emoji(bot, tosend, emoji2)
-        else:
-            tosend = f'{username} has to solve {remain} challenge(s) to complete all categories'
-            return add_emoji(bot, tosend, emoji5)
-    else:
-        if remain == 0:
-            tosend = f'{username} solved all challenges from {category} category'
-            return add_emoji(bot, tosend, emoji2)
-        else:
-            tosend = f'{username} has to solve {remain} challenge(s) to complete {category} category'
-            return add_emoji(bot, tosend, emoji5)
 
 
 async def display_duration(db: DatabaseManager, context: Context, args: Tuple[str], delay: timedelta) \

@@ -104,25 +104,6 @@ async def who_solved(db: DatabaseManager, context: Context) -> None:
     await interrupt(context.message.channel, tosend, embed_color=0x29C1C5, embed_name=embed_name)
 
 
-async def remain(db: DatabaseManager, context: Context) -> None:
-    args = get_command_args(context)
-    if len(args) < 1 or len(args) > 2:
-        tosend = f'Use {context.bot.command_prefix}{context.command} {context.command.help.strip()}'
-        await interrupt(context.message.channel, tosend, embed_color=0xD81948, embed_name="ERROR")
-        return
-
-    username = args[0]
-    if len(args) == 1:
-        embed_name = f"Challenges remaining for {username}"
-        tosend = await show.display_remain(db, context.guild.id, context.bot, username)
-    else:
-        category = args[1]
-        embed_name = f"Challenges remaining in {category} for {username}"
-        tosend = await show.display_remain(db, context.guild.id, context.bot, username, category=category)
-
-    await interrupt(context.message.channel, tosend, embed_color=0x29C1C5, embed_name=embed_name)
-
-
 async def display_by_blocks_duration(context: Context, tosend_list: List[str], color: int, duration_msg: str = '') \
         -> None:
     for block in tosend_list:

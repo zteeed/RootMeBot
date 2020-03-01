@@ -68,11 +68,6 @@ class RootMeBot:
             """ <challenge> """
             await disp.who_solved(self.db, context)
 
-        @self.bot.command(description='Return the number of challenges remaining for a specific user.')
-        async def remain(context: commands.context.Context):
-            """ <username> (<category>) """
-            await disp.remain(self.db, context)
-
         @self.bot.command(description='Return challenges solved grouped by users for last week.')
         async def week(context: commands.context.Context):
             """ (<username>) """
