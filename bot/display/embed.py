@@ -136,7 +136,7 @@ async def display_by_blocks_duration(context: Context, tosend_list: List[str], c
             return
 
         if tosend:
-            embed_name = f"Challenges solved by {block['user']} {duration_msg}"
+            embed_name = f"Challenges solved by {block['user']['rootme_username']} {duration_msg}"
             await interrupt(context.message.channel, tosend, embed_color=color, embed_name=embed_name)
 
 

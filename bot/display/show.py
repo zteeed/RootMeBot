@@ -179,46 +179,38 @@ async def display_remain(db: DatabaseManager, id_discord_server: int, bot: Bot, 
 
 async def display_duration(db: DatabaseManager, context: Context, args: Tuple[str], delay: timedelta) \
         -> List[Dict[str, Optional[str]]]:
+    database_users = await db.select_users(context.guild.id)
     if len(args) == 1:
         if not await db.user_exists(context.guild.id, args[0]):
-            tosend = f'User {args[0]} is not in team.\nYou might add it with ' \
-                f'{context.bot.command_prefix}{context.command} {context.command.help.strip()}'
+            tosend = f'User {args[0]} is not in team.'
             tosend_list = [{'user': args[0], 'msg': tosend}]
             return tosend_list
         else:
-            users = [args[0]]
+            username = args[0]
+            users = [db.find_user(database_users, context.guild.id, username)]
     else:
         users = await db.select_users(context.guild.id)
-        users = [user['rootme_username'] for user in users]
 
-    lang = await db.get_server_language(context.guild.id)
-    scores = await get_scores(users, lang)
-    #  categories = json_data.get_categories()
-    pattern = '%Y-%m-%d %H:%M:%S'
+    now = datetime.now()
     tosend_list = []
+    for user in users:
+        user_info = await Parser.extract_rootme_profile_complete(user["rootme_user_id"])
+        challenges_solved = user_info['validations']
+        challenges_solved = sorted(challenges_solved, key=lambda x: x['date'], reverse=True)
 
-    for d in scores:
         tosend = ''
-        user, score = d['name'], d['score']
-        now = datetime.now()
-        challs_selected = []
-
-        challenges = await get_solved_challenges(user, lang)
-        for chall in challenges:
-            date = datetime.strptime(chall['date'], pattern)
+        for challenge in challenges_solved:
+            date = datetime.strptime(challenge['date'], "%Y-%m-%d %H:%M:%S")
             diff = now - date
-            if diff < delay:
-                challs_selected.append(chall)
-
-        challs_selected.reverse()
-        for chall in challs_selected:
-            value = find_challenge(db, lang, chall['name'])['value']
-            tosend += f' • {chall["name"]} ({value} points) - {chall["date"]}\n'
+            if diff >= delay:
+                continue
+            challenge_info = await Parser.extract_challenge_info(challenge['id_challenge'])
+            tosend += f' • {challenge_info["titre"]} ({challenge_info["score"]} points) - {challenge["date"]}\n'
         tosend_list.append({'user': user, 'msg': tosend})
 
     test = [item['msg'] == '' for item in tosend_list]
     if len(users) == 1 and False not in test:
-        tosend = f'No challenges solved by {user} :frowning:'
+        tosend = f'No challenges solved by {users[0]["rootme_username"]} :frowning:'
         tosend_list = [{'user': None, 'msg': tosend}]
     elif False not in test:
         tosend = 'No challenges solved by anyone :frowning:'
