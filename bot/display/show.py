@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import time
 from datetime import datetime, timedelta
 from html import unescape
 from typing import Dict, List, Optional, Tuple, Union
@@ -8,7 +9,7 @@ from discord.ext.commands.bot import Bot
 from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
-from bot.api.fetch import search_rootme_user, get_solved_challenges, get_diff
+from bot.api.fetch import search_rootme_user, get_solved_challenges, get_diff, get_all_challenges
 from bot.api.parser import Parser
 from bot.colors import green
 from bot.constants import LANGS, emoji2, emoji3, emoji5, limit_size, medals
@@ -17,6 +18,7 @@ from bot.display.update import add_emoji
 from bot.wraps import stop_if_args_none
 
 challenges_type = Optional[Dict[str, Union[str, int, List[str]]]]
+all_challenges = []
 
 
 def display_parts(message: str) -> List[str]:
@@ -113,6 +115,8 @@ async def display_who_solved(db: DatabaseManager, id_discord_server: int, challe
     users = sorted(users, key=lambda x: x['score'], reverse=True)
     for user in users:
         user_info = await Parser.extract_rootme_profile_complete(user['rootme_user_id'])
+        if user_info is None:  #  User {user["rootme_username"]} score is equal to zero
+            continue
         challenge_solved = user_info['validations']
         challenge_solved_ids = [challenge['id_challenge'] for challenge in challenge_solved]
         if rootme_challenge_selected['id_challenge'] not in challenge_solved_ids:
@@ -141,6 +145,8 @@ async def display_duration(db: DatabaseManager, context: Context, args: Tuple[st
     tosend_list = []
     for user in users:
         user_info = await Parser.extract_rootme_profile_complete(user["rootme_user_id"])
+        if user_info is None:  #  User {user["rootme_username"]} score is equal to zero
+            continue
         challenges_solved = user_info['validations']
         challenges_solved = sorted(challenges_solved, key=lambda x: x['date'], reverse=True)
 
@@ -249,10 +255,37 @@ async def display_reset_database(db: DatabaseManager, id_discord_server: int, bo
 
 
 async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Optional[str], Optional[str]]:
+    # check updates about challenges data
+    global all_challenges
+    if not all_challenges:
+        all_challenges = await get_all_challenges()
+    new_all_challenges = await get_all_challenges()
+    if len(new_all_challenges) > len(all_challenges):
+        challenges = [chall for chall in new_all_challenges if chall not in all_challenges]
+        message_title = f'NEW CHALLENGE !!!'
+        tosend = f''
+        for challenge in challenges:
+            print(challenge)
+            tosend += f' • {challenge["titre"]}'
+            """
+            challenge_info = await Parser.extract_challenge_info(challenge['id_challenge'])
+            tosend += f' • {challenge_info["titre"]} ({challenge_info["score"]} points)'
+            tosend += f'\n --> Category: {challenge_info["rubrique"]}'
+            #  tosend += f'\n • URL: {challenge_info["url_challenge"]}'
+            tosend += f'\n --> Difficulty: {challenge_info["difficulte"]}\n'
+            """
+        # update challenges list
+        all_challenges = await get_all_challenges()
+        return message_title, tosend
+    # check updates about user data
     users = await db.select_users(id_discord_server)
     for user in users:
+        time.sleep(1)
+        print(user)
         number_challenge_solved, score = user['number_challenge_solved'], user['score']
         user_data = await Parser.extract_rootme_profile_complete(user['rootme_user_id'])
+        if user_data is None:  #  User {user["rootme_username"]} score is equal to zero
+            continue
         if len(user_data['validations']) == number_challenge_solved:
             continue
         new_challenges_solved = user_data['validations'][:-number_challenge_solved][::-1]  # last solved + reverse order
