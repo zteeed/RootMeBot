@@ -71,6 +71,10 @@ class Parser:
         return await extract_json(f'{URL}/challenges?lang={lang}')
 
     @staticmethod
+    async def extract_challenges_by_page(page_num: int) -> response_profile:
+        return await extract_json(f'{URL}/challenges?debut_challenges={page_num}')
+
+    @staticmethod
     async def extract_challenge_info(id_challenge: Union[int, str]) -> response_profile_complete:
         return await extract_json(f'{URL}/challenges/{id_challenge}')
 
