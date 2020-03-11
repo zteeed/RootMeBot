@@ -36,7 +36,8 @@ class RootMeBot:
     def catch(self):
         @self.bot.event
         async def on_ready():
-            green('RootMeBot is starting !')
+            for server in self.bot.guilds:
+                green(f'RootMeBot is starting on the following server: "{server.name}" !')
 
         @self.bot.command(description='Show information about the project')
         async def info(context: commands.context.Context):
