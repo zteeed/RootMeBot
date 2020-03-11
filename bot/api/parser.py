@@ -42,6 +42,9 @@ async def request_to(url: str) -> response_profile:
             elif response.status == 401:
                 cookies = await get_cookies()
                 return await request_to(url)
+            elif response.status == 429:   # Too Many requests
+                time.sleep(1)
+                return await request_to(url)
             else:
                 return None
 
