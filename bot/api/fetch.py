@@ -61,6 +61,17 @@ async def get_challenges(lang: str):
     return await Parser.extract_challenges(lang)
 
 
+async def get_all_challenges():
+    result = []
+    page_num = -50
+    result_by_page = [{}, {"rel":"next", "href":"..."}]
+    while result_by_page[-1]['rel'] == 'next':
+        page_num += 50
+        result_by_page = await Parser.extract_challenges_by_page(page_num)
+        result += list(result_by_page[0].values())
+    return result
+
+
 async def get_solved_challenges(id_user: int) -> Optional[response_profile_complete]:
     solved_challenges_data = await Parser.extract_rootme_profile_complete(id_user)
     if solved_challenges_data is None:
