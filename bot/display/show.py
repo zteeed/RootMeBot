@@ -18,7 +18,7 @@ from bot.display.update import add_emoji
 from bot.wraps import stop_if_args_none
 
 challenges_type = Optional[Dict[str, Union[str, int, List[str]]]]
-all_challenges = []
+all_challenges = {}  #  all challenges by discord_server
 
 
 def display_parts(message: str) -> List[str]:
@@ -257,11 +257,15 @@ async def display_reset_database(db: DatabaseManager, id_discord_server: int, bo
 async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Optional[str], Optional[str]]:
     # check updates about challenges data
     global all_challenges
-    if not all_challenges:
-        all_challenges = await get_all_challenges()
-    new_all_challenges = await get_all_challenges()
-    if len(new_all_challenges) > len(all_challenges):
-        challenges = [chall for chall in new_all_challenges if chall not in all_challenges]
+    if id_discord_server not in list(all_challenges.keys()):
+        list_all_challenges = await get_all_challenges()
+        all_challenges[id_discord_server] = list_all_challenges
+
+    list_all_challenges = all_challenges[id_discord_server]
+    new_list_all_challenges = await get_all_challenges()
+
+    if len(new_list_all_challenges) > len(list_all_challenges):
+        challenges = [chall for chall in new_list_all_challenges if chall not in list_all_challenges]
         message_title = f'NEW CHALLENGE !!!'
         tosend = f''
         for challenge in challenges:
@@ -275,7 +279,7 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
             tosend += f'\n --> Difficulty: {challenge_info["difficulte"]}\n'
             """
         # update challenges list
-        all_challenges = await get_all_challenges()
+        all_challenges[id_discord_server] = new_list_all_challenges
         return message_title, tosend
     # check updates about user data
     users = await db.select_users(id_discord_server)
