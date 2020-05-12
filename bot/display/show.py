@@ -292,7 +292,11 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
             continue
         if len(user_data['validations']) == number_challenge_solved:
             continue
-        new_challenges_solved = user_data['validations'][:-number_challenge_solved][::-1]  # last solved + reverse order
+
+        if number_challenge_solved > 0:
+            new_challenges_solved = user_data['validations'][:-number_challenge_solved][::-1]  # last solved + reverse order
+        else:
+            new_challenges_solved = user_data['validations'][::-1]  # all solves because there was no solve before + reverse
         new_challenge = new_challenges_solved[0]
 
         challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
