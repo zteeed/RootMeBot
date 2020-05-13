@@ -157,7 +157,7 @@ async def display_duration(db: DatabaseManager, context: Context, args: Tuple[st
             if diff >= delay:
                 continue
             challenge_info = await Parser.extract_challenge_info(challenge['id_challenge'])
-            tosend += f' • {challenge_info["titre"]} ({challenge_info["score"]} points) - {challenge["date"]}\n'
+            tosend += f' • {unescape(challenge_info["titre"])} ({challenge_info["score"]} points) - {challenge["date"]}\n'
         tosend_list.append({'user': user, 'msg': tosend})
 
     test = [item['msg'] == '' for item in tosend_list]
@@ -270,7 +270,7 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
         tosend = f''
         for challenge in challenges:
             print(challenge)
-            tosend += f' • {challenge["titre"]}'
+            tosend += f' • {unescape(challenge["titre"])}'
             """
             challenge_info = await Parser.extract_challenge_info(challenge['id_challenge'])
             tosend += f' • {challenge_info["titre"]} ({challenge_info["score"]} points)'
@@ -302,9 +302,9 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
         challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
         score += int(challenge_info['score'])
 
-        green(f'{user["rootme_username"]} --> {challenge_info["titre"]}')
+        green(f'{user["rootme_username"]} --> {unescape(challenge_info["titre"])}')
         message_title = f'New challenge solved by {user["rootme_username"]}'
-        tosend = f' • {challenge_info["titre"]} ({challenge_info["score"]} points)'
+        tosend = f' • {unescape(challenge_info["titre"])} ({challenge_info["score"]} points)'
         tosend += f'\n • Category: {challenge_info["rubrique"]}'
         #  tosend += f'\n • URL: {challenge_info["url_challenge"]}'
         tosend += f'\n • Difficulty: {challenge_info["difficulte"]}'
