@@ -254,7 +254,7 @@ async def display_reset_database(db: DatabaseManager, id_discord_server: int, bo
     return add_emoji(bot, f'Database has been successfully reset', emoji2)
 
 
-async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Optional[str], Optional[str]]:
+async def display_cron(id_discord_server: int, db: DatabaseManager) -> List[Tuple[Optional[str], Optional[str]]]:
     # check updates about challenges data
     global all_challenges
     
@@ -280,7 +280,9 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
             """
         # update challenges list
         all_challenges[id_discord_server] = new_list_all_challenges
-        return message_title, tosend
+        return [(message_title, tosend)]
+    
+    messages = []
     # check updates about user data
     users = await db.select_users(id_discord_server)
     for user in users:
@@ -297,30 +299,26 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
             new_challenges_solved = user_data['validations'][:-number_challenge_solved][::-1]  # last solved + reverse order
         else:
             new_challenges_solved = user_data['validations'][::-1]  # all solves because there was no solve before + reverse
-        i = 0
-        while i < len(new_challenges_solved):
-            new_challenge = new_challenges_solved[i]
-
+        
+        for new_challenge in new_challenges_solved:
             challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
             if challenge_info is None:
-                i += 1
                 continue
             score += int(challenge_info['score'])
-            break
-        if i == len(new_challenges_solved):
-            continue
 
-        green(f'{user["rootme_username"]} --> {unescape(challenge_info["titre"])}')
-        message_title = f'New challenge solved by {user["rootme_username"]}'
-        tosend = f' • {unescape(challenge_info["titre"])} ({challenge_info["score"]} points)'
-        tosend += f'\n • Category: {challenge_info["rubrique"]}'
-        #  tosend += f'\n • URL: {challenge_info["url_challenge"]}'
-        tosend += f'\n • Difficulty: {challenge_info["difficulte"]}'
-        tosend += f'\n • Date: {new_challenge["date"]}'
-        tosend += f'\n • New score: {score}'
-        await db.update_user_info(id_discord_server, user['rootme_username'], score, number_challenge_solved + 1)
-        return message_title, tosend
-    return None, None
+            green(f'{user["rootme_username"]} --> {unescape(challenge_info["titre"])}')
+            message_title = f'New challenge solved by {user["rootme_username"]}'
+            tosend = f' • {unescape(challenge_info["titre"])} ({challenge_info["score"]} points)'
+            tosend += f'\n • Category: {challenge_info["rubrique"]}'
+            #  tosend += f'\n • URL: {challenge_info["url_challenge"]}'
+            tosend += f'\n • Difficulty: {challenge_info["difficulte"]}'
+            tosend += f'\n • Date: {new_challenge["date"]}'
+            tosend += f'\n • New score: {score}'
+            await db.update_user_info(id_discord_server, user['rootme_username'], score, number_challenge_solved + 1)
+            number_challenge_solved += 1
+            messages.append((message_title, tosend))
+
+    return messages
 
 
 async def display_api_query(path: str) -> Optional[str]:
