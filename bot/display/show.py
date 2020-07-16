@@ -257,12 +257,12 @@ async def display_reset_database(db: DatabaseManager, id_discord_server: int, bo
 async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Optional[str], Optional[str]]:
     # check updates about challenges data
     global all_challenges
+    
+    new_list_all_challenges = await get_all_challenges()
     if id_discord_server not in list(all_challenges.keys()):
-        list_all_challenges = await get_all_challenges()
-        all_challenges[id_discord_server] = list_all_challenges
+        all_challenges[id_discord_server] = new_list_all_challenges
 
     list_all_challenges = all_challenges[id_discord_server]
-    new_list_all_challenges = await get_all_challenges()
 
     if len(new_list_all_challenges) > len(list_all_challenges):
         challenges = [chall for chall in new_list_all_challenges if chall not in list_all_challenges]
@@ -297,10 +297,18 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> Tuple[Opt
             new_challenges_solved = user_data['validations'][:-number_challenge_solved][::-1]  # last solved + reverse order
         else:
             new_challenges_solved = user_data['validations'][::-1]  # all solves because there was no solve before + reverse
-        new_challenge = new_challenges_solved[0]
+        i = 0
+        while i < len(new_challenges_solved):
+            new_challenge = new_challenges_solved[i]
 
-        challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
-        score += int(challenge_info['score'])
+            challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
+            if challenge_info is None:
+                i += 1
+                continue
+            score += int(challenge_info['score'])
+            break
+        if i == len(new_challenges_solved):
+            continue
 
         green(f'{user["rootme_username"]} --> {unescape(challenge_info["titre"])}')
         message_title = f'New challenge solved by {user["rootme_username"]}'
