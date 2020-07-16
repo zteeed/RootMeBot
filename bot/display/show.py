@@ -304,8 +304,7 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> List[Tupl
             challenge_info = await Parser.extract_challenge_info(new_challenge['id_challenge'])
             if challenge_info is None:
                 continue
-            score += int(challenge_info['score'])
-
+            score += int(challenge_info["score"])
             green(f'{user["rootme_username"]} --> {unescape(challenge_info["titre"])}')
             message_title = f'New challenge solved by {user["rootme_username"]}'
             tosend = f' • {unescape(challenge_info["titre"])} ({challenge_info["score"]} points)'
@@ -314,9 +313,11 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> List[Tupl
             tosend += f'\n • Difficulty: {challenge_info["difficulte"]}'
             tosend += f'\n • Date: {new_challenge["date"]}'
             tosend += f'\n • New score: {score}'
-            await db.update_user_info(id_discord_server, user['rootme_username'], score, number_challenge_solved + 1)
-            number_challenge_solved += 1
             messages.append((message_title, tosend))
+        
+        score = int(user_data["score"])
+        number_challenge_solved = len(user_data["validations"])
+        await db.update_user_info(id_discord_server, user['rootme_username'], score, number_challenge_solved)
 
     return messages
 
