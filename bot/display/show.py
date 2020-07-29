@@ -286,7 +286,6 @@ async def display_cron(id_discord_server: int, db: DatabaseManager) -> List[Tupl
     # check updates about user data
     users = await db.select_users(id_discord_server)
     for user in users:
-        time.sleep(1)
         print(user)
         number_challenge_solved, score = user['number_challenge_solved'], user['score']
         user_data = await Parser.extract_rootme_profile_complete(user['rootme_user_id'])

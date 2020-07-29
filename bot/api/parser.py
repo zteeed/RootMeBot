@@ -1,7 +1,9 @@
 import sys
-import time
 from os import environ
 from typing import Any, List, Dict, Optional, Union
+from datetime import datetime, timezone
+from dateutil import parser as dateutil
+from copy import copy
 
 import aiohttp
 import aiohttp.client_exceptions
@@ -9,7 +11,7 @@ import aiohttp.client_reqrep
 from dotenv import load_dotenv
 import asyncio
 
-from bot.colors import red, purple
+from bot.colors import red, purple, yellow
 from bot.constants import URL, timeout
 
 load_dotenv()
@@ -21,9 +23,30 @@ ROOTME_ACCOUNT_PASSWORD = environ.get('ROOTME_ACCOUNT_PASSWORD')
 cookies = {}
 
 
+client_session = None
+def get_client_session():
+    global client_session
+    if client_session is None or type(client_session) != aiohttp.ClientSession:
+        client_session = aiohttp.ClientSession()
+    else:
+        exp = None
+        for c in client_session.cookie_jar:
+            if c.key == "uid":
+                exp = c["expires"]
+                cookie = c
+        
+        client_session = aiohttp.ClientSession()
+        if exp is not None:
+            exp = dateutil.parse(exp)
+            if exp > datetime.now(timezone.utc):
+                client_session.cookie_jar.update_cookies({"uid": cookie})
+
+    return client_session
+
+
 async def get_cookies():
-    async with aiohttp.ClientSession() as session:
-        time.sleep(10)
+    async with get_client_session() as session:
+        await asyncio.sleep(1.2)
         data = dict(login=ROOTME_ACCOUNT_LOGIN, password=ROOTME_ACCOUNT_PASSWORD)
         try:
             async with session.post(f'{URL}/login', data=data, timeout=timeout) as response:
@@ -41,8 +64,8 @@ async def get_cookies():
 
 async def get_status():
     global cookies
-    time.sleep(10)
-    async with aiohttp.ClientSession() as session:
+    await asyncio.sleep(1.2)
+    async with get_client_session() as session:
         try:
             async with session.get(f'{URL}/challenges', cookies=cookies, timeout=timeout) as response:
                 if response.status == 429:
@@ -55,15 +78,13 @@ async def get_status():
 async def request_to(url: str) -> response_profile:
     global cookies
     print(cookies)
-    if "auteurs" in url:
-        time.sleep(5)
-    else:
-        time.sleep(10)
-
-    async with aiohttp.ClientSession() as session:
+    
+    await asyncio.sleep(1.2)
+    async with get_client_session() as session:
         try:
             async with session.get(url, cookies=cookies, timeout=timeout) as response:
                 print(response)
+                yellow("Session : " + str([c for c in session.cookie_jar]))
                 if response.url.host not in URL:  # website page is returned not API (api.www.root-me.org / www.root-me.org)
                     return None
                 #  purple(f'[{response.status}] {url}')
@@ -80,7 +101,7 @@ async def request_to(url: str) -> response_profile:
                 else:
                     return None
         except asyncio.TimeoutError:
-            return await request_to(url)
+                return await request_to(url)
 
 
 async def extract_json(url: str) -> response_profile:
