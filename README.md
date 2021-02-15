@@ -2,7 +2,7 @@
 
 ## Add it to your discord server
 
-Follow [this link](https://discordapp.com/api/oauth2/authorize?client_id=523372231561314304&permissions=8&scope=bot)
+~~Follow [this link](https://http.cat/410)~~ Link removed, but you can still host your own instance of the bot!
 
 ## Self deployment
 
