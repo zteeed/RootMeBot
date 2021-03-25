@@ -20,40 +20,21 @@ response_profile_complete = Optional[Dict[str, Any]]
 
 ROOTME_ACCOUNT_LOGIN = environ.get('ROOTME_ACCOUNT_LOGIN')
 ROOTME_ACCOUNT_PASSWORD = environ.get('ROOTME_ACCOUNT_PASSWORD')
-cookies = {}
+ROOTME_API_KEY = environ.get('ROOTME_API_KEY')
 
-
-client_session = None
-def get_client_session():
-    global client_session
-    if client_session is None or type(client_session) != aiohttp.ClientSession:
-        client_session = aiohttp.ClientSession()
-    else:
-        exp = None
-        for c in client_session.cookie_jar:
-            if c.key == "uid":
-                exp = c["expires"]
-                cookie = c
-        
-        client_session = aiohttp.ClientSession()
-        if exp is not None:
-            exp = dateutil.parse(exp)
-            if exp > datetime.now(timezone.utc):
-                client_session.cookie_jar.update_cookies({"uid": cookie})
-
-    return client_session
-
+cookie_jar = aiohttp.CookieJar()
+cookie_jar.update_cookies({"api_key": ROOTME_API_KEY})
 
 async def get_cookies():
-    async with get_client_session() as session:
-        await asyncio.sleep(1.2)
+    async with aiohttp.ClientSession(cookie_jar=cookie_jar) as session:
+        await asyncio.sleep(1)
         data = dict(login=ROOTME_ACCOUNT_LOGIN, password=ROOTME_ACCOUNT_PASSWORD)
         try:
             async with session.post(f'{URL}/login', data=data, timeout=timeout) as response:
                 print(response)
                 if response.status == 200:
                     content = await response.json(content_type=None)
-                    return dict(spip_session=content[0]['info']['spip_session'])
+                    return "Logged in"
                 elif response.status == 429:   # Too Many requests
                     return await get_cookies()
                 red('Wrong credentials.')
@@ -63,11 +44,10 @@ async def get_cookies():
 
 
 async def get_status():
-    global cookies
-    await asyncio.sleep(1.2)
-    async with get_client_session() as session:
+    await asyncio.sleep(1)
+    async with aiohttp.ClientSession(cookie_jar=cookie_jar) as session:
         try:
-            async with session.get(f'{URL}/challenges', cookies=cookies, timeout=timeout) as response:
+            async with session.get(f'{URL}/challenges', timeout=timeout) as response:
                 if response.status == 429:
                     return await get_status()
                 return response.status
@@ -76,13 +56,10 @@ async def get_status():
 
 
 async def request_to(url: str) -> response_profile:
-    global cookies
-    print(cookies)
-    
-    await asyncio.sleep(1.2)
-    async with get_client_session() as session:
+    await asyncio.sleep(1)
+    async with aiohttp.ClientSession(cookie_jar=cookie_jar) as session:
         try:
-            async with session.get(url, cookies=cookies, timeout=timeout) as response:
+            async with session.get(url, timeout=timeout) as response:
                 print(response)
                 yellow("Session : " + str([c for c in session.cookie_jar]))
                 if response.url.host not in URL:  # website page is returned not API (api.www.root-me.org / www.root-me.org)
@@ -94,7 +71,7 @@ async def request_to(url: str) -> response_profile:
                     if await get_status() == 200:
                         purple(f'{url} -> probably a premium challenge')
                         return None
-                    cookies = await get_cookies()
+                    await get_cookies()
                     return await request_to(url)
                 elif response.status == 429:   # Too Many requests
                     return await request_to(url)
