@@ -2,7 +2,6 @@ import sys
 from os import environ
 from typing import Any, List, Dict, Optional, Union
 from datetime import datetime, timezone
-from dateutil import parser as dateutil
 from copy import copy
 
 import aiohttp
